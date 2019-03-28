@@ -13,6 +13,6 @@ struct _mysys
 };
 typedef struct _mysys mysys;
 
-int dynamics(mysys *, double, double, int);
+int dynamics(mysys *, double, int);
 
 #endif

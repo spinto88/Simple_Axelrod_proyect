@@ -59,20 +59,24 @@ class Mysys(C.Structure):
 
 	self.corr = (self.n * C.POINTER(C.c_double))()
         for i in range(self.n):
-            self.corr[i] = (self.n * C.c_double)(*corr_matrix[i])
+            self.corr[i] = ((self.n) * C.c_double)(*corr_matrix[i])
 
         return None
 
+    def set_delta(self, delta):
+
+        self.delta = delta
+        return None
 
     # model dynamics
-    def dynamics(self, delta, threshold, steps):
+    def dynamics(self, steps = 1):
 
         libc = C.CDLL(os.getcwd() + '/model_src/libc.so')
 
-        libc.dynamics.argtypes = [C.POINTER(Mysys), C.c_double, C.c_double, C.c_int]
+        libc.dynamics.argtypes = [C.POINTER(Mysys), C.c_double, C.c_int]
         libc.dynamics.restype = C.c_int
 
-        libc.dynamics(C.byref(self), delta, threshold, steps)
+        libc.dynamics(C.byref(self), self.delta, steps)
 
         return None
 
@@ -83,7 +87,22 @@ class Mysys(C.Structure):
         final_ad_matrix = np.zeros(corr_matrix.shape, dtype = np.int)
         for i in range(self.n):
             for j in range(i+1, self.n):
-                if corr_matrix[i,j] != 0.00 and self.adjacency_matrix[i,j] == 1:
+                if corr_matrix[i,j] > (self.delta * 0.5) and self.adjacency_matrix[i,j] == 1:
+                    final_ad_matrix[i,j] = 1
+
+        final_ad_matrix += final_ad_matrix.T
+        final_graph = nx.from_numpy_array(final_ad_matrix)
+        fragments = [len(x) for x in list(nx.connected_components(final_graph))]
+
+        return fragments
+
+    def corr_fragments(self):
+
+        corr_matrix = self.get_corr_matrix()
+        final_ad_matrix = np.zeros(corr_matrix.shape, dtype = np.int)
+        for i in range(self.n):
+            for j in range(i+1, self.n):
+                if corr_matrix[i,j] > (self.delta * 0.5):
                     final_ad_matrix[i,j] = 1
 
         final_ad_matrix += final_ad_matrix.T
@@ -94,9 +113,10 @@ class Mysys(C.Structure):
 
     def mean_hom(self):
         aux = []
+        corr_matrix = self.get_corr_matrix()
         for i in range(self.n):
             for j in range(i+1, self.n):
-                aux.append(self.corr[i][j])
+                aux.append(corr_matrix[i,j])
         return np.mean(aux)
     
     def get_corr_matrix(self):
@@ -112,15 +132,15 @@ class Mysys(C.Structure):
         return corr_matrix
 
 
-    def evol2convergence(self, delta, threshold):
+    def evol2convergence(self):
 
-        hdiff = 1.00
         steps = 0
-  
-        while hdiff >= 0.001:      
-            aux = self.mean_hom()
-            self.dynamics(delta, threshold, 1000)
-            hdiff = np.abs(self.mean_hom() - aux)
+        max_difference = 1.00
+        while max_difference >= (self.delta * 0.01):      
+            aux = self.get_corr_matrix()
+            self.dynamics(1000)
+            aux = np.abs(self.get_corr_matrix() - aux)
+            max_difference = np.max(aux)
             steps += 1000
         
         return steps
