@@ -1,38 +1,5 @@
 #include "dynamics.h"
 
-int random_neighbour(mysys *msys, int node)
-{
-	int j, k;
-	int random_neigh;
-	int node_degree = 0;
-	int *neighbors;
-
-        for(j = 0; j < msys->n; j++)
-	{
-		if(msys->a[node][j] == 1)
-			node_degree++;
-	}
-
-	neighbors = (int *)malloc(sizeof(int) * node_degree);
-
-        k = 0;
-        for(j = 0; j < msys->n; j++)
-	{
-		if(msys->a[node][j] == 1)
-		{
-			neighbors[k] = j;
-			k++;
-		}
-	}
-
-	k = rand() % node_degree;
-	random_neigh = neighbors[k];
-
-	free(neighbors);
-
-	return random_neigh;
-}
-
 int dynamics(mysys *msys, double delta, int steps)
 {
 	int i, j, k;
@@ -42,19 +9,31 @@ int dynamics(mysys *msys, double delta, int steps)
 	double aux = 0.00;
 	int n = msys->n;
 	double factor;
+	int number_active_links = 0;
+	link *list_active_links;
 
 	while(step < steps)
 	{
 		step_n = 0;
 	        srand(msys->seed);
-		while(step_n < n)
+		number_active_links = number_of_active_links(msys, delta);
+		if(number_active_links == 0)
+			break;
+		else
 		{
-			i = rand() % n;
-			j = random_neighbour(msys, i);
+			list_active_links = (link *)malloc(sizeof(link) * number_active_links);
+			active_links(msys, delta, list_active_links);
+		}
+			
+		while(step_n < number_active_links)
+		{
+			k = rand() % number_active_links;
+			i = list_active_links[k].i;
+			j = list_active_links[k].j;
 
 			random = (double)rand()/RAND_MAX;
 
-		        if((random < msys->corr[i][j]) && (msys->corr[i][j] > (delta * 0.5)))
+		        if((random < msys->corr[i][j]) && (active_condition(msys, i, j, delta) == 1))
 			{		
 				aux = msys->corr[i][j] + delta;
 				if(aux >= 1.00)
@@ -87,7 +66,10 @@ int dynamics(mysys *msys, double delta, int steps)
 			}
 			step_n++;
 		}
+
+		free(list_active_links);
 		step++;
+
 	        msys->seed = rand();
 	}
 

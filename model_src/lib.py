@@ -131,35 +131,35 @@ class Mysys(C.Structure):
         
         return corr_matrix
 
-    def is_there_active_links(self):
+    def number_of_active_links(self):
 
         libc = C.CDLL(os.getcwd() + '/model_src/libc.so')
 
-        libc.active_links.argtypes = [C.POINTER(Mysys), C.c_double]
-        libc.active_links.restype = C.c_int
+        libc.number_of_active_links.argtypes = [C.POINTER(Mysys), C.c_double]
+        libc.number_of_active_links.restype = C.c_int
 
-        return libc.active_links(C.byref(self), self.delta)
+        return libc.number_of_active_links(C.byref(self), self.delta)
 
     def active_links(self):
-    
+
         A = self.adjacency_matrix
-        C = self.get_corr_matrix()
+	C = self.get_corr_matrix()
 
         links = []
-
         for i in range(self.n):
-            for j in range(self.n):
-              if i < j:
-                if A[i,j] == 1 and C[i,j] != 1.00:
-                    links.append((i,j))
+            for j in range(i+1, self.n):
+                if A[i,j] == 1:
+                    if C[i,j] > (self.delta * 0.5) and C[i,j] < 1.00:
+                        links.append((i,j))
         return links
+
 
     def evol2convergence(self):
 
         steps = 0
-        while self.is_there_active_links() != 0:
-            self.dynamics(1000)
-            steps += 1000
+        while self.number_of_active_links() != 0:
+            self.dynamics(100)
+            steps += 100
         
         return steps
 

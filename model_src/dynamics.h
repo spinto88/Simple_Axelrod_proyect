@@ -3,15 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-struct _mysys
-{
-	int n;
-	double **corr;
-	int **a;
-        int seed;
-};
-typedef struct _mysys mysys;
+#include "model.h"
+#include "active_links.h"
 
 int dynamics(mysys *, double, int);
 

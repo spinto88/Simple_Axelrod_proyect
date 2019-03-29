@@ -3,8 +3,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "dynamics.h"
+#include "model.h"
 
-int active_links(mysys *, double);
+struct _link
+{
+        int i;
+        int j;
+};
+typedef struct _link link;
+
+int active_condition(mysys *, int, int, double);
+int number_of_active_links(mysys *, double);
+int active_links(mysys *, double, link *);
 
 #endif
