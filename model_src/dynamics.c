@@ -1,5 +1,38 @@
 #include "dynamics.h"
 
+int random_neighbour(mysys *msys, int node)
+{
+	int j, k;
+	int random_neigh;
+	int node_degree = 0;
+	int *neighbors;
+
+        for(j = 0; j < msys->n; j++)
+	{
+		if(msys->a[node][j] == 1)
+			node_degree++;
+	}
+
+	neighbors = (int *)malloc(sizeof(int) * node_degree);
+
+        k = 0;
+        for(j = 0; j < msys->n; j++)
+	{
+		if(msys->a[node][j] == 1)
+		{
+			neighbors[k] = j;
+			k++;
+		}
+	}
+
+	k = rand() % node_degree;
+	random_neigh = neighbors[k];
+
+	free(neighbors);
+
+	return random_neigh;
+}
+
 int dynamics(mysys *msys, double delta, int steps)
 {
 	int i, j, k;
@@ -17,9 +50,7 @@ int dynamics(mysys *msys, double delta, int steps)
 		while(step_n < n)
 		{
 			i = rand() % n;
-			j = rand() % n;
-			while(msys->a[i][j] == 0)
-				j = (j+1) % n;
+			j = random_neighbour(msys, i);
 
 			random = (double)rand()/RAND_MAX;
 

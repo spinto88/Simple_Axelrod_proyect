@@ -131,20 +131,49 @@ class Mysys(C.Structure):
         
         return corr_matrix
 
-
-    def evol2convergence(self):
+    def is_there_active_links(self):
 
         libc = C.CDLL(os.getcwd() + '/model_src/libc.so')
 
         libc.active_links.argtypes = [C.POINTER(Mysys), C.c_double]
         libc.active_links.restype = C.c_int
+
+        return libc.active_links(C.byref(self), self.delta)
+
+    def active_links(self):
+    
+        A = self.adjacency_matrix
+        C = self.get_corr_matrix()
+
+        links = []
+
+        for i in range(self.n):
+            for j in range(self.n):
+              if i < j:
+                if A[i,j] == 1 and C[i,j] != 1.00:
+                    links.append((i,j))
+        return links
+
+    def evol2convergence(self, time2wait = None):
+
+        import time
+
+        started_time = time.time()
  
         steps = 0
-        while libc.active_links(C.byref(self), self.delta) != 0:
+        while self.is_there_active_links() != 0:
             self.dynamics(1000)
             steps += 1000
+	    elapsed_time = time.time() - started_time
+            if time2wait == None:
+                pass
+            else:
+                if elapsed_time > time2wait:
+                    break
+                else:
+                    pass
         
-        return steps
+        return steps, elapsed_time
 
     def check_tri_inequality(self):
         corr_matrix = self.get_corr_matrix()
