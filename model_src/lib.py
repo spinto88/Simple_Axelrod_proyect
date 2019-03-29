@@ -134,13 +134,14 @@ class Mysys(C.Structure):
 
     def evol2convergence(self):
 
+        libc = C.CDLL(os.getcwd() + '/model_src/libc.so')
+
+        libc.active_links.argtypes = [C.POINTER(Mysys), C.c_double]
+        libc.active_links.restype = C.c_int
+ 
         steps = 0
-        max_difference = 1.00
-        while max_difference >= (self.delta * 0.01):      
-            aux = self.get_corr_matrix()
+        while libc.active_links(C.byref(self), self.delta) != 0:
             self.dynamics(1000)
-            aux = np.abs(self.get_corr_matrix() - aux)
-            max_difference = np.max(aux)
             steps += 1000
         
         return steps

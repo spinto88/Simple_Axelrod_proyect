@@ -1,6 +1,7 @@
 
 all:
 	gcc -c -fPIC -O3 -Wall -g dynamics.c -o dynamics.o 
-	gcc -shared dynamics.o -o libc.so
+	gcc -c -fPIC -O3 -Wall -g active_links.c -o active_links.o 
+	gcc -shared dynamics.o active_links.o -o libc.so
 clean:
-	rm -rfv dynamics.o libc.so *.pyc
+	rm -rfv *.o libc.so *.pyc
