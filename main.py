@@ -14,8 +14,6 @@ delta = 1.00 / f
 
 fz = 0.60
 
-import time
-
 for fz in np.arange(0.20, 0.975, 0.025):
 
 
@@ -23,10 +21,7 @@ for fz in np.arange(0.20, 0.975, 0.025):
 
     mysys.set_delta(delta)
 
-    steps, elapsed_time = mysys.evol2convergence(time2wait = 10)
-
-    if elapsed_time > 10:
-        break
+    steps = mysys.evol2convergence()
 
     print np.max(mysys.fragments())
 

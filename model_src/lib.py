@@ -154,26 +154,14 @@ class Mysys(C.Structure):
                     links.append((i,j))
         return links
 
-    def evol2convergence(self, time2wait = None):
+    def evol2convergence(self):
 
-        import time
-
-        started_time = time.time()
- 
         steps = 0
         while self.is_there_active_links() != 0:
             self.dynamics(1000)
             steps += 1000
-	    elapsed_time = time.time() - started_time
-            if time2wait == None:
-                pass
-            else:
-                if elapsed_time > time2wait:
-                    break
-                else:
-                    pass
         
-        return steps, elapsed_time
+        return steps
 
     def check_tri_inequality(self):
         corr_matrix = self.get_corr_matrix()
