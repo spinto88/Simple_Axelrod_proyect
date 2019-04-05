@@ -41,7 +41,7 @@ class Mysys(C.Structure):
         states = [np.random.choice(q,f) for i in range(self.n)]
 
         self.axelrod_params = [f,q]
-        self.fraction_of_zeros = fraction_of_zeros
+        self.fraction_of_zeros = (1.00 - 1.00 / q)**f
 
         def homophily(state1, state2):
 
@@ -67,6 +67,19 @@ class Mysys(C.Structure):
 
         self.delta = delta
         return None
+
+    def actual_fraction_of_zeros(self):
+
+        corr_matrix = self.get_corr_matrix()
+
+        zero_links = 0
+        total_links = int(self.n * (self.n-1) * 0.5)
+        for i in range(corr_matrix.shape[0]):
+            for j in range(i+1, corr_matrix.shape[1]):
+                if corr_matrix[i,j] == 0.00:
+                    zero_links += 1
+
+        return float(zero_links)/total_links
 
     # model dynamics
     def dynamics(self, steps = 1):

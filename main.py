@@ -9,18 +9,23 @@ np.random.seed(seed)
 
 n = 100
 
-f = 100
+f = 5
 delta = 1.00 / f
 
-fz = 0.60
+data = []
 
-for fz in np.arange(0.20, 0.975, 0.025):
+for i in range(100):
+
+    fz = 0.80
 
     mysys = Mysys(n = n, f = f, fraction_of_zeros = fz, id_topology = 0.0)
 
-    mysys.set_delta(delta)
+    data.append(mysys.actual_fraction_of_zeros())
 
-    mysys.evol2convergence()
+print np.mean(data)
+#mysys.set_delta(delta)
 
-    print np.max(mysys.fragments())
+#mysys.evol2convergence()
+
+#print np.max(mysys.fragments())
 
