@@ -6,6 +6,6 @@
 #include "model.h"
 #include "active_links.h"
 
-int dynamics(mysys *, double, int);
+int dynamics(mysys *, double, double, int);
 
 #endif

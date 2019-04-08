@@ -1,17 +1,17 @@
 #include "active_links.h"
 
-int active_condition(mysys *msys, int i, int j, double delta)
+int active_condition(mysys *msys, int i, int j, double delta, double threshold)
 {
         if(msys->a[i][j] == 1)
         {
-                if((msys->corr[i][j] > (delta * 0.5)) && (msys->corr[i][j] < 1.00))
+                if((msys->corr[i][j] >= threshold) && (msys->corr[i][j] < (1.00 - threshold)))
                         return 1;
         }
 
         return 0;
 }
 
-int number_of_active_links(mysys *msys, double delta)
+int number_of_active_links(mysys *msys, double delta, double threshold)
 {
 	int i,j;
 	int n = msys->n;
@@ -21,7 +21,7 @@ int number_of_active_links(mysys *msys, double delta)
 	{
 		for(j = 0; j < n; j++)
 		{
-			if(active_condition(msys, i, j, delta))
+			if(active_condition(msys, i, j, delta, threshold))
 				number_active_links++;
 		}
 	}
@@ -29,7 +29,7 @@ int number_of_active_links(mysys *msys, double delta)
 }
 
 
-int active_links(mysys *msys, double delta, link *list_active_links)
+int active_links(mysys *msys, double delta, double threshold, link *list_active_links)
 {
 	int i, j, k;
 	int n = msys->n;
@@ -39,7 +39,7 @@ int active_links(mysys *msys, double delta, link *list_active_links)
 	{
 		for(j = 0; j < n; j++)
 		{
-			if(active_condition(msys, i, j, delta))
+			if(active_condition(msys, i, j, delta, threshold))
 			{
 				list_active_links[k].i = i;
 				list_active_links[k].j = j;

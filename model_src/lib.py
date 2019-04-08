@@ -68,6 +68,11 @@ class Mysys(C.Structure):
         self.delta = delta
         return None
 
+    def set_threshold(self, threshold):
+
+        self.threshold = threshold
+        return None
+
     def actual_fraction_of_zeros(self):
 
         corr_matrix = self.get_corr_matrix()
@@ -86,10 +91,10 @@ class Mysys(C.Structure):
 
         libc = C.CDLL(os.getcwd() + '/model_src/libc.so')
 
-        libc.dynamics.argtypes = [C.POINTER(Mysys), C.c_double, C.c_int]
+        libc.dynamics.argtypes = [C.POINTER(Mysys), C.c_double, C.c_double, C.c_int]
         libc.dynamics.restype = C.c_int
 
-        libc.dynamics(C.byref(self), self.delta, steps)
+        libc.dynamics(C.byref(self), self.delta, self.threshold, steps)
 
         return None
 
@@ -100,7 +105,7 @@ class Mysys(C.Structure):
         final_ad_matrix = np.zeros(corr_matrix.shape, dtype = np.int)
         for i in range(self.n):
             for j in range(i+1, self.n):
-                if corr_matrix[i,j] > (self.delta * 0.5) and self.adjacency_matrix[i,j] == 1:
+                if corr_matrix[i,j] > self.threshold and self.adjacency_matrix[i,j] == 1:
                     final_ad_matrix[i,j] = 1
 
         final_ad_matrix += final_ad_matrix.T
@@ -115,7 +120,7 @@ class Mysys(C.Structure):
         final_ad_matrix = np.zeros(corr_matrix.shape, dtype = np.int)
         for i in range(self.n):
             for j in range(i+1, self.n):
-                if corr_matrix[i,j] > (self.delta * 0.5):
+                if corr_matrix[i,j] > self.threshold:
                     final_ad_matrix[i,j] = 1
 
         final_ad_matrix += final_ad_matrix.T
@@ -148,10 +153,10 @@ class Mysys(C.Structure):
 
         libc = C.CDLL(os.getcwd() + '/model_src/libc.so')
 
-        libc.number_of_active_links.argtypes = [C.POINTER(Mysys), C.c_double]
+        libc.number_of_active_links.argtypes = [C.POINTER(Mysys), C.c_double, C.c_double]
         libc.number_of_active_links.restype = C.c_int
 
-        return libc.number_of_active_links(C.byref(self), self.delta)
+        return libc.number_of_active_links(C.byref(self), self.delta, self.threshold)
 
     def active_links(self):
 
@@ -162,7 +167,7 @@ class Mysys(C.Structure):
         for i in range(self.n):
             for j in range(i+1, self.n):
                 if A[i,j] == 1:
-                    if C[i,j] > (self.delta * 0.5) and C[i,j] < 1.00:
+                    if C[i,j] >= self.threshold and C[i,j] < (1.00 - self.threshold):
                         links.append((i,j))
         return links
 

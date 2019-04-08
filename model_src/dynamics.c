@@ -1,6 +1,6 @@
 #include "dynamics.h"
 
-int dynamics(mysys *msys, double delta, int steps)
+int dynamics(mysys *msys, double delta, double threshold, int steps)
 {
 	int i, j, k;
 	double random;
@@ -16,13 +16,13 @@ int dynamics(mysys *msys, double delta, int steps)
 	{
 		step_n = 0;
 	        srand(msys->seed);
-		number_active_links = number_of_active_links(msys, delta);
+		number_active_links = number_of_active_links(msys, delta, threshold);
 		if(number_active_links == 0)
 			break;
 		else
 		{
 			list_active_links = (link *)malloc(sizeof(link) * number_active_links);
-			active_links(msys, delta, list_active_links);
+			active_links(msys, delta, threshold, list_active_links);
 		}
 			
 		while(step_n < number_active_links)
@@ -33,7 +33,7 @@ int dynamics(mysys *msys, double delta, int steps)
 
 			random = (double)rand()/RAND_MAX;
 
-		        if((random < msys->corr[i][j]) && (active_condition(msys, i, j, delta) == 1))
+		        if((random < msys->corr[i][j]) && (active_condition(msys, i, j, delta, threshold) == 1))
 			{		
 				aux = msys->corr[i][j] + delta;
 				if(aux >= 1.00)
