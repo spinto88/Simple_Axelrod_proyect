@@ -6,3 +6,4 @@
 *.swp*
 *.~lock*
 *.dat
+nohup.out
