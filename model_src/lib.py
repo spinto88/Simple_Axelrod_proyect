@@ -11,21 +11,21 @@ class Mysys(C.Structure):
 	        ('a', C.POINTER(C.POINTER(C.c_int))),
                 ('seed', C.c_int)]
 
-    def __init__(self, n, f, fraction_of_zeros, id_topology = 1.0):
+    def __init__(self, n, f, fraction_of_zeros, topology = 'complete', **kwargs):
 
         self.n = n
         
         self.initial_state(f,fraction_of_zeros)
         
-        self.topology(id_topology)
+        self.topology(topology, **kwargs)
 
-	self.seed = np.random.randint(0, 10**6)
+	self.seed = np.random.randint(10**6)
 
-    def topology(self, id_topology):
+    def topology(self, topology, **kwargs):
 
         from set_topology import set_topology
 
-        self.adjacency_matrix = set_topology(id_topology, self.n).toarray()
+        self.adjacency_matrix = set_topology(topology, self.n, **kwargs).toarray()
 
 	self.a = (self.n * C.POINTER(C.c_int))()
         for i in range(self.n):
@@ -105,7 +105,7 @@ class Mysys(C.Structure):
         final_ad_matrix = np.zeros(corr_matrix.shape, dtype = np.int)
         for i in range(self.n):
             for j in range(i+1, self.n):
-                if corr_matrix[i,j] > self.threshold and self.adjacency_matrix[i,j] == 1:
+                if corr_matrix[i,j] >= self.threshold and self.adjacency_matrix[i,j] == 1:
                     final_ad_matrix[i,j] = 1
 
         final_ad_matrix += final_ad_matrix.T
@@ -120,7 +120,7 @@ class Mysys(C.Structure):
         final_ad_matrix = np.zeros(corr_matrix.shape, dtype = np.int)
         for i in range(self.n):
             for j in range(i+1, self.n):
-                if corr_matrix[i,j] > self.threshold:
+                if corr_matrix[i,j] >= self.threshold:
                     final_ad_matrix[i,j] = 1
 
         final_ad_matrix += final_ad_matrix.T
